@@ -4,20 +4,21 @@
 [Демо-страница](http://ato.su/asmtidy/).
 
 ```my $tidy = new asmtidy
-    (
-      {
-        'indent_left' => 4,
-        'indent_comma' => 0,
-        'indent_tail_comment' => 1,
-        'indent_operands' => 1,
-        'unaligned_comments' => 'right',
-        'del_empty_lines' => 'yes',
-        'user_names' => 'Invoke,register',
-        'log_file' => '/tmp/asmtidy.log'
-     }
-    );
-    print $asmtidy->tidy_file( 'test.asm' );
-    print $asmtidy->tidy_content( $asm_source );```
+(
+  {
+    'indent_left' => 4,
+    'indent_comma' => 0,
+    'indent_tail_comment' => 1,
+    'indent_operands' => 1,
+    'unaligned_comments' => 'right',
+    'del_empty_lines' => 'yes',
+    'user_names' => 'Invoke,register',
+    'log_file' => '/tmp/asmtidy.log'
+  }
+);
+print $asmtidy->tidy_file( 'test.asm' );
+print $asmtidy->tidy_content( $asm_source );
+```
 
 ##Параметры
 
