@@ -30,7 +30,7 @@ sub new {
 
 	my $self = {
 		ver  => $VERSION,
-		copy => 'Vsevolod Lutovinov <klopp@yandex.ru>'
+		author => 'Vsevolod Lutovinov <klopp@yandex.ru>'
 	};
 
 	%{ $self->{instr} } = map { $_ => 1 } split(
@@ -155,9 +155,7 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
 	$self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
 	bless( $self, $class );
-
 	$self->set_opt($opt);
-
 	$self;
 }
 
@@ -221,11 +219,25 @@ sub tidy_content {
 }
 
 # ------------------------------------------------------------------------------
+sub author
+{
+    my ($self) = @_;
+    return $self->{author};
+}
+
+# ------------------------------------------------------------------------------
+sub ver
+{
+    my ($self) = @_;
+    return $self->{ver};
+}
+
+# ------------------------------------------------------------------------------
 sub _out {
 	my ($self) = @_;
 	$self->_format_comments();
 
-	my $copy = '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy};
+	my $copy = '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{author};
     $copy =~ s{<}{&lt;}g;
     $copy =~ s{>}{&gt;}g;
 	unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
