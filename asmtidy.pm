@@ -32,7 +32,7 @@ sub new {
 		opt    => $opt,
 		lastcr => 0,
 		ver    => '0.5',
-		copy   => 'Vsevolod Lutovinov klopp@yandex.ru'
+		copy   => 'Vsevolod Lutovinov &lt;klopp@yandex.ru&gt;'
 	};
 
 	%{ $self->{user_ids} }
@@ -212,13 +212,11 @@ sub _out {
 	my ($self) = @_;
 	$self->_format_comments();
 
-	####print '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy} . "\n"
 	unshift @{ $self->{lines} },
 		'; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy}
 		if $ENV{HTTP_HOST};
 
 	return join( "\n", map { $_->[0] } @{ $self->{lines} } );
-	####print $_->[0] . "\n" for @{ $self->{lines} };
 }
 
 # ------------------------------------------------------------------------------
