@@ -26,7 +26,7 @@ $VERSION = '1.002';
 
 # ------------------------------------------------------------------------------
 sub new {
-	my ($class, $opt) = @_;
+	my ( $class, $opt ) = @_;
 
 	my $self = {
 		opt    => $opt,
@@ -36,7 +36,7 @@ sub new {
 	};
 
 	%{ $self->{user_ids} }
-		= map { lc($_) => 1 } split(/[\s,;]+/, $self->{opt}->{user_names})
+		= map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
 		if $self->{opt}->{user_names};
 	%{ $self->{instr} } = map { $_ => 1 } split(
 		/[,\s]+/,
@@ -156,36 +156,38 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
 	);
 
 	$self->{opt}->{indent_left}
-		= $self->{opt}->{indent_left}
-		? ($self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4)
+		= defined $self->{opt}->{indent_left}
+		? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
 		: 4;
 	$self->{opt}->{indent_comma}
 		= $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0;
 	$self->{opt}->{indent_tail_comment}
 		= $self->{opt}->{indent_tail_comment}
-		? ($self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1)
+		? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
 		: 1;
-	$self->{opt}->{del_empty_lines} |= 'no';
+		
+	$self->{opt}->{del_empty_lines} ||= 'no';
 	$self->{opt}->{del_empty_lines} = 'yes'
 		unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
 
 	die "indent_operands => {N|tabN}, got '"
 		. $self->{opt}->{indent_operands} . "'!\n"
-		if $self->{opt}->{indent_operands}
+		if defined $self->{opt}->{indent_operands}
 		&& $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
-	$self->{opt}->{indent_operands} = 1 unless $self->{opt}->{indent_operands};
+	$self->{opt}->{indent_operands} = 1
+		unless defined $self->{opt}->{indent_operands};
 
-	$self->{cmt_rx}   = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
+	$self->{cmt_rx} = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
 	$self->{comma_rx} = qr/,(?=(?:[^"']|["'][^'"]*['"])*$)/;
 	$self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
-	bless($self, $class);
+	bless( $self, $class );
 	$self;
 }
 
 # ------------------------------------------------------------------------------
 sub tidy_file {
-	my ($self, $file) = @_;
+	my ( $self, $file ) = @_;
 
 	open my $f, $file || die "Can not read '$file': $!\n";
 	$self->{lines} = ();
@@ -196,11 +198,12 @@ sub tidy_file {
 
 # ------------------------------------------------------------------------------
 sub tidy_content {
-	my ($self, $content) = @_;
+	my ( $self, $content ) = @_;
 
 	$self->{lines} = ();
 	$self->_format_line($_)
-		for (ref $content eq 'ARRAY' ? @{$content} : split(/^/, $content));
+		for (
+		ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
 	$self->_out();
 }
 
@@ -208,46 +211,51 @@ sub tidy_content {
 sub _out {
 	my ($self) = @_;
 	$self->_format_comments();
-	print '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy} . "\n"
+
+	####print '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy} . "\n"
+	unshift @{ $self->{lines} },
+		'; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy}
 		if $ENV{HTTP_HOST};
-	print $_->[0] . "\n" for @{ $self->{lines} };
+
+	return join( "\n", map { $_->[0] } @{ $self->{lines} } );
+	####print $_->[0] . "\n" for @{ $self->{lines} };
 }
 
 # ------------------------------------------------------------------------------
 sub _format_line {
-	my ($self, $line) = @_;
+	my ( $self, $line ) = @_;
 
 	chomp $line;
 
 	return if $line =~ /^; asmtidy\.pm v \d+\.\d+$/;
 
-	if ($line =~ /^\s*$/) {
+	if ( $line =~ /^\s*$/ ) {
 		return if $self->{opt}->{del_empty_lines} eq 'all';
 		$self->{lastcr} = 0 unless $self->{opt}->{del_empty_lines} eq 'yes';
-		push(@{ $self->{lines} }, ['']) if $self->{lastcr} < 1;
+		push( @{ $self->{lines} }, [''] ) if $self->{lastcr} < 1;
 		$self->{lastcr}++;
 		return;
 	}
 	$self->{lastcr} = 0;
 
-	if ($line =~ /^(\s*)(;.*)$/) {
-		if ($1 ne '') {
-			if ($self->{opt}->{unaligned_comments} eq 'left') {
+	if ( $line =~ /^(\s*)(;.*)$/ ) {
+		if ( $1 ne '' ) {
+			if ( $self->{opt}->{unaligned_comments} eq 'left' ) {
 				$line = $2;
 			}
-			elsif ($self->{opt}->{unaligned_comments} eq 'right') {
-				$line = (' ' x $self->{opt}->{indent_left}) . $2;
+			elsif ( $self->{opt}->{unaligned_comments} eq 'right' ) {
+				$line = ( ' ' x $self->{opt}->{indent_left} ) . $2;
 			}
 			else {
 			}
 		}
 
-		push(@{ $self->{lines} }, [$line]);
+		push( @{ $self->{lines} }, [$line] );
 		return;
 	}
 
-	if ($line =~ /$self->{label_rx}/) {
-		my ($label, $tail) = ($1, $2);
+	if ( $line =~ /$self->{label_rx}/ ) {
+		my ( $label, $tail ) = ( $1, $2 );
 		$self->_format_line($label);
 		$self->_format_line($tail);
 		return;
@@ -259,7 +267,7 @@ sub _format_line {
 	$line =~ s/^\s+|\s+$//gs;
 	$comment =~ s/^\s+|\s+$//gs;
 
-	my ($first, $last) = ('', '');
+	my ( $first, $last ) = ( '', '' );
 
 	$first = $line;
 
@@ -269,42 +277,47 @@ sub _format_line {
 	$first =~ s/^\s+|\s+$//g;
 	$last =~ s/^\s+|\s+$//g;
 
-	if ($self->{instr}->{ lc($first) } || $self->{user_ids}->{ lc($first) }) {
-		if ($last && $self->{opt}->{indent_operands} =~ /^tab(\d+)$/) {
+	if ( $self->{instr}->{ lc($first) } || $self->{user_ids}->{ lc($first) } )
+	{
+		if ( $last && $self->{opt}->{indent_operands} =~ /^tab(\d+)$/ ) {
 			my $max    = $1;
 			my $length = length $first;
 			my $sp     = $max - $length;
 			$sp = 1 if $sp <= 0;
-			$last = (' ' x $sp) . $last if $sp > 0;
+			$last = ( ' ' x $sp ) . $last if $sp > 0;
 		}
-		elsif ($self->{opt}->{indent_operands} =~ /^\d+$/) {
-			$last = (' ' x $self->{opt}->{indent_operands}) . $last;
+		elsif ( $self->{opt}->{indent_operands} =~ /^\d+$/ ) {
+			$last = ( ' ' x $self->{opt}->{indent_operands} ) . $last;
 		}
 
-		if ($last ne '') {
+		if ( $last ne '' ) {
 			$last =~ /^(.+?)\s*,(.+?)$/;
 			if ($2) {
-				my ($part1, $part2) = ($1, $2);
+				my ( $part1, $part2 ) = ( $1, $2 );
 				$part1 =~ s/\s+$//g;
-				my @parts = split($self->{comma_rx}, $part2);
+				my @parts = split( $self->{comma_rx}, $part2 );
 				s/^\s+|\s+$//g for @parts;
 				unshift @parts, $part1;
-				$last
-					= join(',' . (' ' x $self->{opt}->{indent_comma}), @parts);
+				$last = join(
+					',' . ( ' ' x $self->{opt}->{indent_comma} ),
+					@parts
+				);
 			}
 		}
 
 		$last =~ s/\s+$//g;
 		push(
 			@{ $self->{lines} },
-			[ (' ' x $self->{opt}->{indent_left}) . $first . $last, $comment ]
+			[   ( ' ' x $self->{opt}->{indent_left} ) . $first . $last,
+				$comment
+			]
 		);
 		return;
 	}
 	else {
 	}
 
-	push(@{ $self->{lines} }, [ $line, $comment ]);
+	push( @{ $self->{lines} }, [ $line, $comment ] );
 }
 
 # ------------------------------------------------------------------------------
@@ -315,8 +328,8 @@ sub _format_comments {
 	my %clines;
 	my $idx = 0;
 
-	foreach my $line (@{ $self->{lines} }) {
-		if ($line->[0] !~ /^\s+$/ && $line->[1]) {
+	foreach my $line ( @{ $self->{lines} } ) {
+		if ( $line->[0] !~ /^\s+$/ && $line->[1] ) {
 			my $length = length $line->[0];
 			$max = $length if $max < $length;
 			$clines{$idx} = $length;
@@ -324,12 +337,12 @@ sub _format_comments {
 		$idx++;
 	}
 
-	for $idx (0 .. $#{ $self->{lines} }) {
+	for $idx ( 0 .. $#{ $self->{lines} } ) {
 		next unless $clines{$idx};
 
 		my $sp = $max - $clines{$idx} + $self->{opt}->{indent_tail_comment};
 		$self->{lines}->[$idx]->[0]
-			.= (' ' x $sp) . $self->{lines}->[$idx]->[1];
+			.= ( ' ' x $sp ) . $self->{lines}->[$idx]->[1];
 		undef $clines{$idx};
 		undef $self->{lines}->[$idx]->[1];
 	}
@@ -338,10 +351,10 @@ sub _format_comments {
 # ------------------------------------------------------------------------------
 sub _log {
 	my $self = shift;
-	if ($self->{opt}->{log_file}) {
+	if ( $self->{opt}->{log_file} ) {
 		open my $f, '>>' . $self->{opt}->{log_file};
 		if ($f) {
-			print $f (join("\n", @_)) . "\n";
+			print $f ( join( "\n", @_ ) ) . "\n";
 			close $f;
 		}
 	}
