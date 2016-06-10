@@ -4,7 +4,7 @@ package asmtidy;
 # ------------------------------------------------------------------------------
 use Modern::Perl;
 use vars qw/$VERSION/;
-$VERSION = '1.002';
+$VERSION = '1.006';
 
 # ------------------------------------------------------------------------------
 
@@ -29,15 +29,10 @@ sub new {
 	my ( $class, $opt ) = @_;
 
 	my $self = {
-		opt    => $opt,
-		lastcr => 0,
-		ver    => '0.5',
-		copy   => 'Vsevolod Lutovinov &lt;klopp@yandex.ru&gt;'
+		ver    => $VERSION,
+		copy   => 'Vsevolod Lutovinov <klopp@yandex.ru>'
 	};
-
-	%{ $self->{user_ids} }
-		= map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
-		if $self->{opt}->{user_names};
+		
 	%{ $self->{instr} } = map { $_ => 1 } split(
 		/[,\s]+/,
 		'aaa,aad,aam,aas,adc,add,addpd,addps,addsd,addss,addsubpd,addsubps,aesdec,aesdeclast,aesenc,
@@ -155,34 +150,49 @@ vxorps,vzeroall,vzeroupper,wbinvd,wrfsbase,wrgsbase,wrmsr,xadd,xchg,xcryptcbc,xc
 xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xsha1,xsha256,xstore'
 	);
 
-	$self->{opt}->{indent_left}
-		= defined $self->{opt}->{indent_left}
-		? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
-		: 4;
-	$self->{opt}->{indent_comma}
-		= $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0;
-	$self->{opt}->{indent_tail_comment}
-		= $self->{opt}->{indent_tail_comment}
-		? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
-		: 1;
-		
-	$self->{opt}->{del_empty_lines} ||= 'no';
-	$self->{opt}->{del_empty_lines} = 'yes'
-		unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
-
-	die "indent_operands => {N|tabN}, got '"
-		. $self->{opt}->{indent_operands} . "'!\n"
-		if defined $self->{opt}->{indent_operands}
-		&& $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
-	$self->{opt}->{indent_operands} = 1
-		unless defined $self->{opt}->{indent_operands};
-
 	$self->{cmt_rx} = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
 	$self->{comma_rx} = qr/,(?=(?:[^"']|["'][^'"]*['"])*$)/;
 	$self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
 	bless( $self, $class );
+	
+	$self->set_opt( $opt );
+	
 	$self;
+}
+
+# ------------------------------------------------------------------------------
+sub set_opt
+{
+    my ( $self, $opt ) = @_;
+    
+    %{ $self->{user_ids} }
+        = map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
+        if $self->{opt}->{user_names};
+        
+    $self->{opt}->{indent_left}
+        = defined $self->{opt}->{indent_left}
+        ? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
+        : 4;
+    $self->{opt}->{indent_comma}
+        = $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0;
+    $self->{opt}->{indent_tail_comment}
+        = $self->{opt}->{indent_tail_comment}
+        ? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
+        : 1;
+        
+    $self->{opt}->{del_empty_lines} ||= 'no';
+    $self->{opt}->{del_empty_lines} = 'yes'
+        unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
+
+    die "indent_operands => {N|tabN}, got '"
+        . $self->{opt}->{indent_operands} . "'!\n"
+        if defined $self->{opt}->{indent_operands}
+        && $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
+    $self->{opt}->{indent_operands} = 1
+        unless defined $self->{opt}->{indent_operands};
+
+    return $self;	
 }
 
 # ------------------------------------------------------------------------------
