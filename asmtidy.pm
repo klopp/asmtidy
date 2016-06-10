@@ -175,7 +175,9 @@ sub set_opt {
 		? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
 		: 4;
 	$self->{opt}->{indent_comma}
-		= $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0;
+		= $self->{opt}->{indent_comma}
+		? ( $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0 )
+		: 0;
 	$self->{opt}->{indent_tail_comment}
 		= $self->{opt}->{indent_tail_comment}
 		? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
