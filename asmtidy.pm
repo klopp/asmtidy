@@ -25,17 +25,17 @@ $VERSION = '1.006';
 
 # ------------------------------------------------------------------------------
 sub new {
-	my ( $class, $opt ) = @_;
+    my ( $class, $opt ) = @_;
 
-	my $self = {
-		name   => __PACKAGE__,
-		ver    => $VERSION,
-		author => 'Vsevolod Lutovinov <klopp@yandex.ru>'
-	};
+    my $self = {
+        name   => __PACKAGE__,
+        ver    => $VERSION,
+        author => 'Vsevolod Lutovinov <klopp@yandex.ru>'
+    };
 
-	%{ $self->{instr} } = map { $_ => 1 } split(
-		/[,\s]+/,
-		'aaa,aad,aam,aas,adc,add,addpd,addps,addsd,addss,addsubpd,addsubps,aesdec,aesdeclast,aesenc,
+    %{ $self->{instr} } = map { $_ => 1 } split(
+        /[,\s]+/,
+        'aaa,aad,aam,aas,adc,add,addpd,addps,addsd,addss,addsubpd,addsubps,aesdec,aesdeclast,aesenc,
 aesenclast,aesimc,aeskeygenassist,and,andn,andnpd,andnps,andpd,andps,arpl,bextr,blcfill,blci,blcic,
 blcmsk,blcs,blendpd,blendps,blendvpd,blendvps,blsfill,blsi,blsic,blsmk,blsr,bound,bsf,bsr,bswap,bt,
 btc,btr,bts,bzhi,call,cbw,cdq,cdqe,clc,cld,clflush,clgi,cli,clts,cmc,cmova,cmovae,cmovb,cmovbe,
@@ -148,244 +148,244 @@ vroundss,vrsqrtps,vrsqrtss,vshufpd,vshufps,vsqrtpd,vsqrtps,vsqrtsd,vsqrtss,vstmx
 vsubsd,vsubss,vtestpd,vtestps,vucomisd,vucomiss,vunpckhpd,vunpckhps,vunpcklpd,vunpcklps,vxorpd,
 vxorps,vzeroall,vzeroupper,wbinvd,wrfsbase,wrgsbase,wrmsr,xadd,xchg,xcryptcbc,xcryptcfb,xcryptctr,
 xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xsha1,xsha256,xstore'
-	);
+    );
 
-	$self->{cmt_rx} = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
-	$self->{comma_rx} = qr/,(?=(?:[^"']|["'][^'"]*['"])*$)/;
-	$self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
+    $self->{cmt_rx} = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
+    $self->{comma_rx} = qr/,(?=(?:[^"']|["'][^'"]*['"])*$)/;
+    $self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
-	bless( $self, $class );
-	$self->set_opt($opt);
-	return $self;
+    bless( $self, $class );
+    $self->set_opt($opt);
+    return $self;
 }
 
 # ------------------------------------------------------------------------------
 sub set_opt {
-	my ( $self, $opt ) = @_;
+    my ( $self, $opt ) = @_;
 
-	$self->{opt} = $opt;
+    $self->{opt} = $opt;
 
-	%{ $self->{user_ids} }
-		= map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
-		if $self->{opt}->{user_names};
+    %{ $self->{user_ids} }
+        = map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
+        if $self->{opt}->{user_names};
 
-	$self->{opt}->{indent_left}
-		= defined $self->{opt}->{indent_left}
-		? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
-		: 4;
-	$self->{opt}->{indent_comma}
-		= $self->{opt}->{indent_comma}
-		? ( $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0 )
-		: 0;
-	$self->{opt}->{indent_tail_comment}
-		= $self->{opt}->{indent_tail_comment}
-		? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
-		: 1;
+    $self->{opt}->{indent_left}
+        = defined $self->{opt}->{indent_left}
+        ? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
+        : 4;
+    $self->{opt}->{indent_comma}
+        = $self->{opt}->{indent_comma}
+        ? ( $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0 )
+        : 0;
+    $self->{opt}->{indent_tail_comment}
+        = $self->{opt}->{indent_tail_comment}
+        ? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
+        : 1;
 
-	$self->{opt}->{del_empty_lines} ||= 'no';
-	$self->{opt}->{del_empty_lines} = 'yes'
-		unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
+    $self->{opt}->{del_empty_lines} ||= 'no';
+    $self->{opt}->{del_empty_lines} = 'yes'
+        unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
 
-	die "indent_operands => {N|tabN}, got '"
-		. $self->{opt}->{indent_operands} . "'!\n"
-		if defined $self->{opt}->{indent_operands}
-		&& $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
-	$self->{opt}->{indent_operands} = 1
-		unless defined $self->{opt}->{indent_operands};
+    die "indent_operands => {N|tabN}, got '"
+        . $self->{opt}->{indent_operands} . "'!\n"
+        if defined $self->{opt}->{indent_operands}
+        && $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
+    $self->{opt}->{indent_operands} = 1
+        unless defined $self->{opt}->{indent_operands};
 
-	return $self;
+    return $self;
 }
 
 # ------------------------------------------------------------------------------
 sub tidy_file {
-	my ( $self, $file ) = @_;
+    my ( $self, $file ) = @_;
 
-	open my $f, '<:encoding(utf8)', $file || die "Can not read '$file': $!\n";
-	$self->{lines}  = ();
-	$self->{lastcr} = 0;
-	$self->_format_line($_) while <$f>;
-	close $f;
-	return $self->_out();
+    open my $f, '<:encoding(utf8)', $file || die "Can not read '$file': $!\n";
+    $self->{lines}  = ();
+    $self->{lastcr} = 0;
+    $self->_format_line($_) while <$f>;
+    close $f;
+    return $self->_out();
 }
 
 # ------------------------------------------------------------------------------
 sub tidy_content {
-	my ( $self, $content ) = @_;
+    my ( $self, $content ) = @_;
 
-	$self->{lastcr} = 0;
-	$self->{lines}  = ();
-	$self->_format_line($_)
-		for (
-		ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
-	return $self->_out();
+    $self->{lastcr} = 0;
+    $self->{lines}  = ();
+    $self->_format_line($_)
+        for (
+        ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
+    return $self->_out();
 }
 
 # ------------------------------------------------------------------------------
 sub author {
-	my ($self) = @_;
-	return $self->{author};
+    my ($self) = @_;
+    return $self->{author};
 }
 
 # ------------------------------------------------------------------------------
 sub ver {
-	my ($self) = @_;
-	return $self->{ver};
+    my ($self) = @_;
+    return $self->{ver};
 }
 
 # ------------------------------------------------------------------------------
 sub name {
-	my ($self) = @_;
-	return $self->{name};
+    my ($self) = @_;
+    return $self->{name};
 }
 
 # ------------------------------------------------------------------------------
 sub id {
-	my ($self) = @_;
-	return
-		  $self->{name} . ' ver '
-		. $self->{ver}
-		. ', (C) '
-		. $self->{author};
+    my ($self) = @_;
+    return
+          $self->{name} . ' ver '
+        . $self->{ver}
+        . ', (C) '
+        . $self->{author};
 }
 
 # ------------------------------------------------------------------------------
 sub _out {
-	my ($self) = @_;
-	$self->_format_comments();
+    my ($self) = @_;
+    $self->_format_comments();
 
-	my $copy = '; ' . $self->id();
-	$copy =~ s{<}{&lt;}g;
-	$copy =~ s{>}{&gt;}g;
-	unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
+    my $copy = '; ' . $self->id();
+    $copy =~ s{<}{&lt;}g;
+    $copy =~ s{>}{&gt;}g;
+    unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
 
-	return join( "\n", map { $_->[0] } @{ $self->{lines} } )."\n";
+    return join( "\n", map { $_->[0] } @{ $self->{lines} } ) . "\n";
 }
 
 # ------------------------------------------------------------------------------
 sub _format_line {
-	my ( $self, $line ) = @_;
+    my ( $self, $line ) = @_;
 
-	chomp $line;
+    chomp $line;
 
-	return if $line =~ /^; asmtidy\.pm v \d+\.\d+$/;
+    return if $line =~ /^; asmtidy\.pm v \d+\.\d+$/;
 
-	if ( $line =~ /^\s*$/ ) {
-		return if $self->{opt}->{del_empty_lines} eq 'all';
-		$self->{lastcr} = 0 unless $self->{opt}->{del_empty_lines} eq 'yes';
-		push( @{ $self->{lines} }, [''] ) if $self->{lastcr} < 1;
-		$self->{lastcr}++;
-		return;
-	}
-	$self->{lastcr} = 0;
+    if ( $line =~ /^\s*$/ ) {
+        return if $self->{opt}->{del_empty_lines} eq 'all';
+        $self->{lastcr} = 0 unless $self->{opt}->{del_empty_lines} eq 'yes';
+        push( @{ $self->{lines} }, [''] ) if $self->{lastcr} < 1;
+        $self->{lastcr}++;
+        return;
+    }
+    $self->{lastcr} = 0;
 
-	if ( $line =~ /^(\s*)(;.*)$/ ) {
-		if ( $1 ne '' ) {
-			if ( $self->{opt}->{unaligned_comments} eq 'left' ) {
-				$line = $2;
-			}
-			elsif ( $self->{opt}->{unaligned_comments} eq 'right' ) {
-				$line = ( ' ' x $self->{opt}->{indent_left} ) . $2;
-			}
-			else {
-			}
-		}
+    if ( $line =~ /^(\s*)(;.*)$/ ) {
+        if ( $1 ne '' ) {
+            if ( $self->{opt}->{unaligned_comments} eq 'left' ) {
+                $line = $2;
+            }
+            elsif ( $self->{opt}->{unaligned_comments} eq 'right' ) {
+                $line = ( ' ' x $self->{opt}->{indent_left} ) . $2;
+            }
+            else {
+            }
+        }
 
-		push( @{ $self->{lines} }, [$line] );
-		return;
-	}
+        push( @{ $self->{lines} }, [$line] );
+        return;
+    }
 
-	if ( $line =~ /$self->{label_rx}/ ) {
-		my ( $label, $tail ) = ( $1, $2 );
-		$self->_format_line($label);
-		$self->_format_line($tail);
-		return;
-	}
+    if ( $line =~ /$self->{label_rx}/ ) {
+        my ( $label, $tail ) = ( $1, $2 );
+        $self->_format_line($label);
+        $self->_format_line($tail);
+        return;
+    }
 
-	my $comment = '';
+    my $comment = '';
 
-	$line =~ /$self->{cmt_rx}/ and $line = $1, $comment = "$2$3";
-	$line =~ s/^\s+|\s+$//gs;
-	$comment =~ s/^\s+|\s+$//gs;
+    $line =~ /$self->{cmt_rx}/ and $line = $1, $comment = "$2$3";
+    $line =~ s/^\s+|\s+$//gs;
+    $comment =~ s/^\s+|\s+$//gs;
 
-	my ( $first, $last ) = ( '', '' );
+    my ( $first, $last ) = ( '', '' );
 
-	$first = $line;
+    $first = $line;
 
-	$first = $1, $last = $2
-		if $line =~ /^([^\s]+)\s+([^\s].*)$/;
+    $first = $1, $last = $2
+        if $line =~ /^([^\s]+)\s+([^\s].*)$/;
 
-	$first =~ s/^\s+|\s+$//g;
-	$last =~ s/^\s+|\s+$//g;
+    $first =~ s/^\s+|\s+$//g;
+    $last =~ s/^\s+|\s+$//g;
 
-	if ( $self->{instr}->{ lc($first) } || $self->{user_ids}->{ lc($first) } )
-	{
-		if ( $last && $self->{opt}->{indent_operands} =~ /^tab(\d+)$/ ) {
-			my $max    = $1;
-			my $length = length $first;
-			my $sp     = $max - $length;
-			$sp = 1 if $sp <= 0;
-			$last = ( ' ' x $sp ) . $last if $sp > 0;
-		}
-		elsif ( $self->{opt}->{indent_operands} =~ /^\d+$/ ) {
-			$last = ( ' ' x $self->{opt}->{indent_operands} ) . $last;
-		}
+    if ( $self->{instr}->{ lc($first) } || $self->{user_ids}->{ lc($first) } )
+    {
+        if ( $last && $self->{opt}->{indent_operands} =~ /^tab(\d+)$/ ) {
+            my $max    = $1;
+            my $length = length $first;
+            my $sp     = $max - $length;
+            $sp = 1 if $sp <= 0;
+            $last = ( ' ' x $sp ) . $last if $sp > 0;
+        }
+        elsif ( $self->{opt}->{indent_operands} =~ /^\d+$/ ) {
+            $last = ( ' ' x $self->{opt}->{indent_operands} ) . $last;
+        }
 
-		if ( $last ne '' ) {
-			$last =~ /^(.+?)\s*,(.+?)$/;
-			if ($2) {
-				my ( $part1, $part2 ) = ( $1, $2 );
-				$part1 =~ s/\s+$//g;
-				my @parts = split( $self->{comma_rx}, $part2 );
-				s/^\s+|\s+$//g for @parts;
-				unshift @parts, $part1;
-				$last = join(
-					',' . ( ' ' x $self->{opt}->{indent_comma} ),
-					@parts
-				);
-			}
-		}
+        if ( $last ne '' ) {
+            $last =~ /^(.+?)\s*,(.+?)$/;
+            if ($2) {
+                my ( $part1, $part2 ) = ( $1, $2 );
+                $part1 =~ s/\s+$//g;
+                my @parts = split( $self->{comma_rx}, $part2 );
+                s/^\s+|\s+$//g for @parts;
+                unshift @parts, $part1;
+                $last = join(
+                    ',' . ( ' ' x $self->{opt}->{indent_comma} ),
+                    @parts
+                );
+            }
+        }
 
-		$last =~ s/\s+$//g;
-		push(
-			@{ $self->{lines} },
-			[   ( ' ' x $self->{opt}->{indent_left} ) . $first . $last,
-				$comment
-			]
-		);
-		return;
-	}
-	else {
-	}
+        $last =~ s/\s+$//g;
+        push(
+            @{ $self->{lines} },
+            [   ( ' ' x $self->{opt}->{indent_left} ) . $first . $last,
+                $comment
+            ]
+        );
+        return;
+    }
+    else {
+    }
 
-	push( @{ $self->{lines} }, [ $line, $comment ] );
+    push( @{ $self->{lines} }, [ $line, $comment ] );
 }
 
 # ------------------------------------------------------------------------------
 sub _format_comments {
-	my ($self) = @_;
+    my ($self) = @_;
 
-	my $max = 0;
-	my %clines;
-	my $idx = 0;
+    my $max = 0;
+    my %clines;
+    my $idx = 0;
 
-	foreach my $line ( @{ $self->{lines} } ) {
-		if ( $line->[0] !~ /^\s+$/ && $line->[1] ) {
-			my $length = length $line->[0];
-			$max = $length if $max < $length;
-			$clines{$idx} = $length;
-		}
-		$idx++;
-	}
+    foreach my $line ( @{ $self->{lines} } ) {
+        if ( $line->[0] !~ /^\s+$/ && $line->[1] ) {
+            my $length = length $line->[0];
+            $max = $length if $max < $length;
+            $clines{$idx} = $length;
+        }
+        $idx++;
+    }
 
-	for $idx ( 0 .. $#{ $self->{lines} } ) {
-		next unless $clines{$idx};
+    for $idx ( 0 .. $#{ $self->{lines} } ) {
+        next unless $clines{$idx};
 
-		my $sp = $max - $clines{$idx} + $self->{opt}->{indent_tail_comment};
-		$self->{lines}->[$idx]->[0]
-			.= ( ' ' x $sp ) . $self->{lines}->[$idx]->[1];
-		undef $clines{$idx};
-		undef $self->{lines}->[$idx]->[1];
-	}
+        my $sp = $max - $clines{$idx} + $self->{opt}->{indent_tail_comment};
+        $self->{lines}->[$idx]->[0]
+            .= ( ' ' x $sp ) . $self->{lines}->[$idx]->[1];
+        undef $clines{$idx};
+        undef $self->{lines}->[$idx]->[1];
+    }
 }
 
 # ------------------------------------------------------------------------------
