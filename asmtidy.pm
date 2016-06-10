@@ -29,10 +29,10 @@ sub new {
 	my ( $class, $opt ) = @_;
 
 	my $self = {
-		ver    => $VERSION,
-		copy   => 'Vsevolod Lutovinov <klopp@yandex.ru>'
+		ver  => $VERSION,
+		copy => 'Vsevolod Lutovinov <klopp@yandex.ru>'
 	};
-		
+
 	%{ $self->{instr} } = map { $_ => 1 } split(
 		/[,\s]+/,
 		'aaa,aad,aam,aas,adc,add,addpd,addps,addsd,addss,addsubpd,addsubps,aesdec,aesdeclast,aesenc,
@@ -155,44 +155,45 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
 	$self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
 	bless( $self, $class );
-	
-	$self->set_opt( $opt );
-	
+
+	$self->set_opt($opt);
+
 	$self;
 }
 
 # ------------------------------------------------------------------------------
-sub set_opt
-{
-    my ( $self, $opt ) = @_;
-    
-    %{ $self->{user_ids} }
-        = map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
-        if $self->{opt}->{user_names};
-        
-    $self->{opt}->{indent_left}
-        = defined $self->{opt}->{indent_left}
-        ? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
-        : 4;
-    $self->{opt}->{indent_comma}
-        = $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0;
-    $self->{opt}->{indent_tail_comment}
-        = $self->{opt}->{indent_tail_comment}
-        ? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
-        : 1;
-        
-    $self->{opt}->{del_empty_lines} ||= 'no';
-    $self->{opt}->{del_empty_lines} = 'yes'
-        unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
+sub set_opt {
+	my ( $self, $opt ) = @_;
 
-    die "indent_operands => {N|tabN}, got '"
-        . $self->{opt}->{indent_operands} . "'!\n"
-        if defined $self->{opt}->{indent_operands}
-        && $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
-    $self->{opt}->{indent_operands} = 1
-        unless defined $self->{opt}->{indent_operands};
+	$self->{opt} = $opt;
 
-    return $self;	
+	%{ $self->{user_ids} }
+		= map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
+		if $self->{opt}->{user_names};
+
+	$self->{opt}->{indent_left}
+		= defined $self->{opt}->{indent_left}
+		? ( $self->{opt}->{indent_left} =~ /^(\d+)$/ ? $1 : 4 )
+		: 4;
+	$self->{opt}->{indent_comma}
+		= $self->{opt}->{indent_comma} =~ /^(\d+)$/ ? $1 : 0;
+	$self->{opt}->{indent_tail_comment}
+		= $self->{opt}->{indent_tail_comment}
+		? ( $self->{opt}->{indent_tail_comment} =~ /^(\d+)$/ ? $1 : 1 )
+		: 1;
+
+	$self->{opt}->{del_empty_lines} ||= 'no';
+	$self->{opt}->{del_empty_lines} = 'yes'
+		unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
+
+	die "indent_operands => {N|tabN}, got '"
+		. $self->{opt}->{indent_operands} . "'!\n"
+		if defined $self->{opt}->{indent_operands}
+		&& $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
+	$self->{opt}->{indent_operands} = 1
+		unless defined $self->{opt}->{indent_operands};
+
+	return $self;
 }
 
 # ------------------------------------------------------------------------------
@@ -200,8 +201,8 @@ sub tidy_file {
 	my ( $self, $file ) = @_;
 
 	open my $f, '<:encoding(utf8)', $file || die "Can not read '$file': $!\n";
-	$self->{lines} = ();
-    $self->{lastcr} = 0;
+	$self->{lines}  = ();
+	$self->{lastcr} = 0;
 	$self->_format_line($_) while <$f>;
 	close $f;
 	$self->_out();
@@ -211,8 +212,8 @@ sub tidy_file {
 sub tidy_content {
 	my ( $self, $content ) = @_;
 
-    $self->{lastcr} = 0;
-    $self->{lines} = ();
+	$self->{lastcr} = 0;
+	$self->{lines}  = ();
 	$self->_format_line($_)
 		for (
 		ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
@@ -224,9 +225,10 @@ sub _out {
 	my ($self) = @_;
 	$self->_format_comments();
 
-	unshift @{ $self->{lines} },
-		'; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy}
-		if $ENV{HTTP_HOST};
+	my $copy = '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{copy};
+    $copy =~ s{<}{&lt;}g;
+    $copy =~ s{>}{&gt;}g;
+	unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
 
 	return join( "\n", map { $_->[0] } @{ $self->{lines} } );
 }
