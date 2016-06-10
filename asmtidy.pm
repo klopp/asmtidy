@@ -258,7 +258,7 @@ sub _out {
 	$copy =~ s{>}{&gt;}g;
 	unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
 
-	return join( "\n", map { $_->[0] } @{ $self->{lines} } );
+	return join( "\n", map { $_->[0] } @{ $self->{lines} } )."\n";
 }
 
 # ------------------------------------------------------------------------------
