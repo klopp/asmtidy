@@ -238,16 +238,21 @@ sub name {
 }
 
 # ------------------------------------------------------------------------------
+sub id {
+	my ($self) = @_;
+	return
+		  $self->{name} . ' ver '
+		. $self->{ver}
+		. ', (C) '
+		. $self->{author};
+}
+
+# ------------------------------------------------------------------------------
 sub _out {
 	my ($self) = @_;
 	$self->_format_comments();
 
-	my $copy
-		= '; '
-		. $self->{name} . ' ver '
-		. $self->{ver}
-		. ', (C) '
-		. $self->{author};
+	my $copy = '; ' . $self->id();
 	$copy =~ s{<}{&lt;}g;
 	$copy =~ s{>}{&gt;}g;
 	unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
