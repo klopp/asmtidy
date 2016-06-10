@@ -17,7 +17,7 @@ my $del_empty_lines     = 'no';
 my $user_names          = '';
 my $output              = undef;
 my $bak                 = 'orig';
-my $at                  = new asmtidy();
+my $at                  = asmtidy->new();
 my $file                = shift @ARGV;
 _usage('No input file!') unless $file;
 
