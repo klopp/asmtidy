@@ -189,7 +189,7 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
 sub tidy_file {
 	my ( $self, $file ) = @_;
 
-	open my $f, '>:encoding(utf8)', $file || die "Can not read '$file': $!\n";
+	open my $f, '<:encoding(utf8)', $file || die "Can not read '$file': $!\n";
 	$self->{lines} = ();
 	$self->_format_line($_) while <$f>;
 	close $f;
