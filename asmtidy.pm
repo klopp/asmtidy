@@ -29,7 +29,8 @@ sub new {
 	my ( $class, $opt ) = @_;
 
 	my $self = {
-		ver  => $VERSION,
+		name   => __PACKAGE__,
+		ver    => $VERSION,
 		author => 'Vsevolod Lutovinov <klopp@yandex.ru>'
 	};
 
@@ -219,17 +220,21 @@ sub tidy_content {
 }
 
 # ------------------------------------------------------------------------------
-sub author
-{
-    my ($self) = @_;
-    return $self->{author};
+sub author {
+	my ($self) = @_;
+	return $self->{author};
 }
 
 # ------------------------------------------------------------------------------
-sub ver
-{
-    my ($self) = @_;
-    return $self->{ver};
+sub ver {
+	my ($self) = @_;
+	return $self->{ver};
+}
+
+# ------------------------------------------------------------------------------
+sub name {
+	my ($self) = @_;
+	return $self->{name};
 }
 
 # ------------------------------------------------------------------------------
@@ -237,9 +242,14 @@ sub _out {
 	my ($self) = @_;
 	$self->_format_comments();
 
-	my $copy = '; ASM Tidy ver ' . $self->{ver} . ', (C) ' . $self->{author};
-    $copy =~ s{<}{&lt;}g;
-    $copy =~ s{>}{&gt;}g;
+	my $copy
+		= '; '
+		. $self->{name} . ' ver '
+		. $self->{ver}
+		. ', (C) '
+		. $self->{author};
+	$copy =~ s{<}{&lt;}g;
+	$copy =~ s{>}{&gt;}g;
 	unshift @{ $self->{lines} }, $copy if $ENV{HTTP_HOST};
 
 	return join( "\n", map { $_->[0] } @{ $self->{lines} } );
