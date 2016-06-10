@@ -156,7 +156,7 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
 
 	bless( $self, $class );
 	$self->set_opt($opt);
-	$self;
+	return $self;
 }
 
 # ------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ sub tidy_file {
 	$self->{lastcr} = 0;
 	$self->_format_line($_) while <$f>;
 	close $f;
-	$self->_out();
+	return $self->_out();
 }
 
 # ------------------------------------------------------------------------------
@@ -217,7 +217,7 @@ sub tidy_content {
 	$self->_format_line($_)
 		for (
 		ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
-	$self->_out();
+	return $self->_out();
 }
 
 # ------------------------------------------------------------------------------
