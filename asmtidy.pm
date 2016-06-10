@@ -201,6 +201,7 @@ sub tidy_file {
 
 	open my $f, '<:encoding(utf8)', $file || die "Can not read '$file': $!\n";
 	$self->{lines} = ();
+    $self->{lastcr} = 0;
 	$self->_format_line($_) while <$f>;
 	close $f;
 	$self->_out();
@@ -210,7 +211,8 @@ sub tidy_file {
 sub tidy_content {
 	my ( $self, $content ) = @_;
 
-	$self->{lines} = ();
+    $self->{lastcr} = 0;
+    $self->{lines} = ();
 	$self->_format_line($_)
 		for (
 		ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
