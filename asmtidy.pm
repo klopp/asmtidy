@@ -19,7 +19,6 @@ $VERSION = '1.006';
             'unaligned_comments' => $unaligned_comments,
             'del_empty_lines' => $del_empty_lines,
             'user_names' => $user_names,
-            'log_file' => $log_file
         }
     );
 =cut
@@ -386,18 +385,6 @@ sub _format_comments {
 			.= ( ' ' x $sp ) . $self->{lines}->[$idx]->[1];
 		undef $clines{$idx};
 		undef $self->{lines}->[$idx]->[1];
-	}
-}
-
-# ------------------------------------------------------------------------------
-sub _log {
-	my $self = shift;
-	if ( $self->{opt}->{log_file} ) {
-		open my $f, '>>' . $self->{opt}->{log_file};
-		if ($f) {
-			print $f ( join( "\n", @_ ) ) . "\n";
-			close $f;
-		}
 	}
 }
 
