@@ -252,12 +252,6 @@ sub id {
 sub _out {
     my ($self) = @_;
     $self->_format_comments();
-
-    my $copy = '; ' . $self->id();
-    $copy =~ s{<}{&lt;}g;
-    $copy =~ s{>}{&gt;}g;
-    unshift @{ $self->{lines} }, [$copy] if $ENV{HTTP_HOST};
-
     return join( "\n", map { $_->[0] } @{ $self->{lines} } ) . "\n";
 }
 
