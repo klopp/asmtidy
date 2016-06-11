@@ -63,7 +63,7 @@ while (@ARGV) {
             $unaligned_comments = $val;
         }
         when ('-un') {
-            _noval($key) unless $val;
+            _noval($key) unless defined $val;
             $user_names .= ',' if $user_names;
             $user_names .= $val;
         }
