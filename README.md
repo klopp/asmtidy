@@ -3,7 +3,7 @@
 
 [Демо-страница](http://ato.su/asmtidy/).
 
-## asmtidy.pm
+# asmtidy.pm
 
     my $tidy = new asmtidy
     (
@@ -78,3 +78,47 @@
 
 ###user_names
 Пользовательские имена, которые не считать метками и не прижимать влево. Например, *Invoke*. Разделители - пробел, перевод строки, запятая, точка с запятой, регистр не учитывается. 
+
+# asmtidy.pl
+
+    Usage: $program {file|-} [options]. Valid options are:
+
+      -bak extension
+        Extension for backup file (default: orig)
+    
+      -del {yes|no}
+        Delete empty lines (yes - leave only one, default: no)
+    
+      -io {N|tabN}
+        Indent second operands; number of spaces (defaut, 1 space) or TAB's
+        filled up to N spaces 
+  
+      -itc N
+        Indent tail comments (default: 1 space)
+
+      -lm N
+        Left margin (default: 4 spaces)  
+ 
+      -o file
+        Output to file (default or -: stdout, +: rewrite source)
+    
+      -sc N
+        Spaces between comma and second operand (default: 0)
+    
+      -slc {left|right}
+        Move single line comments to left margin, or to next line begin 
+        (default: leave unchanged)
+    
+      -un {name1[,name2;...]}
+        List of user names (separators: , or ;)
+
+    Examples:
+
+      # read file.pl from stdin and output result to stdout:
+      cat file.pl | $program -o - 
+      # or
+      cat file.pl | $program 
+
+      # read file.pl and rewrite it by result:
+      $program file.pl -o + 
+      
