@@ -23,6 +23,8 @@ _usage('No input file!') unless $file;
 
 while (@ARGV) {
     given ( my $key = shift @ARGV ) {
+        
+        
         my $val = shift @ARGV;
         when ('-bak') {
             _noval($key) unless $val;
