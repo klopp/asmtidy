@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 # ------------------------------------------------------------------------------
 use Modern::Perl;
@@ -12,9 +12,9 @@ my $indent_left         = 4;
 my $indent_comma        = 0;
 my $indent_tail_comment = 1;
 my $indent_operands     = 1;
-my $unaligned_comments  = '-';
+my $unaligned_comments  = q{-};
 my $del_empty_lines     = 'no';
-my $user_names          = '';
+my $user_names          = q{};
 my $output              = undef;
 my $bak                 = 'orig';
 my $at                  = asmtidy->new();
@@ -23,8 +23,7 @@ _usage('No input file!') unless $file;
 
 while (@ARGV) {
     given ( my $key = shift @ARGV ) {
-        
-        
+
         my $val = shift @ARGV;
         when ('-bak') {
             _noval($key) unless $val;
@@ -66,7 +65,7 @@ while (@ARGV) {
         }
         when ('-un') {
             _noval($key) unless defined $val;
-            $user_names .= ',' if $user_names;
+            $user_names .= q{,} if $user_names;
             $user_names .= $val;
         }
         default {
@@ -89,12 +88,11 @@ $at->set_opt(
 # ------------------------------------------------------------------------------
 my $rc;
 try {
-    if ( $file eq '-' ) {
+    if ( $file eq q{-} ) {
         my $olds = $/;
         local $/ = undef;
         my @stdin = <>;
         $rc = $at->tidy_content( \@stdin );
-        $/  = $olds;
     }
     else {
         $rc = $at->tidy_file($file);
@@ -105,12 +103,12 @@ catch {
     exit -2;
 };
 
-if ( $output && $output ne '-' ) {
+if ( $output && $output ne q{-} ) {
 
-    $output = $file if $output eq '+';
+    $output = $file if $output eq q{+};
     _create_bak_file($output);
     if ( open my $f, '>:encoding(utf8)', $output ) {
-        print $f $rc;
+        print {$f} $rc;
         close $f;
     }
     else {
@@ -123,7 +121,8 @@ else {
 }
 
 # ------------------------------------------------------------------------------
-sub _usage {
+sub _usage
+{
     my ($msg) = @_;
 
     my $program = $0;
@@ -180,19 +179,22 @@ Examples:
 }
 
 # ------------------------------------------------------------------------------
-sub _noval {
+sub _noval
+{
     my ($key) = @_;
-    _usage("No value for key \"$key\"!");
+    return _usage("No value for key \"$key\"!");
 }
 
 # ------------------------------------------------------------------------------
-sub _badval {
+sub _badval
+{
     my ($key) = @_;
-    _usage("Invalid value for key \"$key\"!");
+    return _usage("Invalid value for key \"$key\"!");
 }
 
 # ------------------------------------------------------------------------------
-sub _create_bak_file {
+sub _create_bak_file
+{
 
     my $bakfile = $file;
     while ( -f $bakfile ) {

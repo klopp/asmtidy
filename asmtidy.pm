@@ -154,7 +154,7 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
     $self->{comma_rx} = qr/,(?=(?:[^"']|["'][^'"]*['"])*$)/;
     $self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
-    bless( $self, $class );
+    bless $self, $class;
     $self->set_opt($opt);
     return $self;
 }
@@ -266,25 +266,25 @@ sub _format_line {
     if ( $line =~ /^\s*$/ ) {
         return if $self->{opt}->{del_empty_lines} eq 'all';
         $self->{lastcr} = 0 unless $self->{opt}->{del_empty_lines} eq 'yes';
-        push( @{ $self->{lines} }, [''] ) if $self->{lastcr} < 1;
+        push @{ $self->{lines} }, [q{}]  if $self->{lastcr} < 1;
         $self->{lastcr}++;
         return;
     }
     $self->{lastcr} = 0;
 
     if ( $line =~ /^(\s*)(;.*)$/ ) {
-        if ( $1 ne '' ) {
+        if ( $1 ne q{} ) {
             if ( $self->{opt}->{unaligned_comments} eq 'left' ) {
                 $line = $2;
             }
             elsif ( $self->{opt}->{unaligned_comments} eq 'right' ) {
-                $line = ( ' ' x $self->{opt}->{indent_left} ) . $2;
+                $line = ( q{ } x $self->{opt}->{indent_left} ) . $2;
             }
             else {
             }
         }
 
-        push( @{ $self->{lines} }, [$line] );
+        push @{ $self->{lines} }, [$line];
         return;
     }
 
@@ -295,36 +295,36 @@ sub _format_line {
         return;
     }
 
-    my $comment = '';
+    my $comment = q{};
 
     $line =~ /$self->{cmt_rx}/ and $line = $1, $comment = "$2$3";
     $line =~ s/^\s+|\s+$//gs;
     $comment =~ s/^\s+|\s+$//gs;
 
-    my ( $first, $last ) = ( '', '' );
+    my ( $first, $last ) = ( q{}, q{} );
 
     $first = $line;
 
     $first = $1, $last = $2
-        if $line =~ /^([^\s]+)\s+([^\s].*)$/;
+        if $line =~ /^([\S]+)\s+([\S].*)$/;
 
     $first =~ s/^\s+|\s+$//g;
     $last =~ s/^\s+|\s+$//g;
 
-    if ( $self->{instr}->{ lc($first) } || $self->{user_ids}->{ lc($first) } )
+    if ( $self->{instr}->{ lc $first } || $self->{user_ids}->{ lc $first } )
     {
         if ( $last && $self->{opt}->{indent_operands} =~ /^tab(\d+)$/ ) {
             my $max    = $1;
             my $length = length $first;
             my $sp     = $max - $length;
             $sp = 1 if $sp <= 0;
-            $last = ( ' ' x $sp ) . $last if $sp > 0;
+            $last = ( q{ } x $sp ) . $last if $sp > 0;
         }
         elsif ( $self->{opt}->{indent_operands} =~ /^\d+$/ ) {
-            $last = ( ' ' x $self->{opt}->{indent_operands} ) . $last;
+            $last = ( q{ } x $self->{opt}->{indent_operands} ) . $last;
         }
 
-        if ( $last ne '' ) {
+        if ( $last ne q{} ) {
             $last =~ /^(.+?)\s*,(.+?)$/;
             if ($2) {
                 my ( $part1, $part2 ) = ( $1, $2 );
@@ -333,25 +333,24 @@ sub _format_line {
                 s/^\s+|\s+$//g for @parts;
                 unshift @parts, $part1;
                 $last = join(
-                    ',' . ( ' ' x $self->{opt}->{indent_comma} ),
+                    q{,} . ( q{ } x $self->{opt}->{indent_comma} ),
                     @parts
                 );
             }
         }
 
         $last =~ s/\s+$//g;
-        push(
+        push
             @{ $self->{lines} },
-            [   ( ' ' x $self->{opt}->{indent_left} ) . $first . $last,
+            [   ( q{ } x $self->{opt}->{indent_left} ) . $first . $last,
                 $comment
-            ]
-        );
+            ];
         return;
     }
     else {
     }
 
-    push( @{ $self->{lines} }, [ $line, $comment ] );
+    push @{ $self->{lines} }, [ $line, $comment ];
 }
 
 # ------------------------------------------------------------------------------
@@ -376,7 +375,7 @@ sub _format_comments {
 
         my $sp = $max - $clines{$idx} + $self->{opt}->{indent_tail_comment};
         $self->{lines}->[$idx]->[0]
-            .= ( ' ' x $sp ) . $self->{lines}->[$idx]->[1];
+            .= ( q{ } x $sp ) . $self->{lines}->[$idx]->[1];
         undef $clines{$idx};
         undef $self->{lines}->[$idx]->[1];
     }
