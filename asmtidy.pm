@@ -24,7 +24,8 @@ $VERSION = '1.006';
 =cut
 
 # ------------------------------------------------------------------------------
-sub new {
+sub new
+{
     my ( $class, $opt ) = @_;
 
     my $self = {
@@ -150,7 +151,7 @@ vxorps,vzeroall,vzeroupper,wbinvd,wrfsbase,wrgsbase,wrmsr,xadd,xchg,xcryptcbc,xc
 xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xsha1,xsha256,xstore'
     );
 
-    $self->{cmt_rx} = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
+    $self->{cmt_rx}   = qr/^(.+?)(\s*;\s*)(?=(?:[^"']|["'][^'"]*['"])*$)(.*)/o;
     $self->{comma_rx} = qr/,(?=(?:[^"']|["'][^'"]*['"])*$)/;
     $self->{label_rx} = qr/^([\?\$\@\w][\?\$\@\w\d]+\:)(.+)/o;
 
@@ -160,13 +161,13 @@ xcryptecb,xcryptofb,xgetbv,xlatb,xor,xorpd,xorps,xrstor,xsave,xsaveopt,xsetbv,xs
 }
 
 # ------------------------------------------------------------------------------
-sub set_opt {
+sub set_opt
+{
     my ( $self, $opt ) = @_;
 
     $self->{opt} = $opt;
 
-    %{ $self->{user_ids} }
-        = map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
+    %{ $self->{user_ids} } = map { lc($_) => 1 } split( /[\s,;]+/, $self->{opt}->{user_names} )
         if $self->{opt}->{user_names};
 
     $self->{opt}->{indent_left}
@@ -186,8 +187,7 @@ sub set_opt {
     $self->{opt}->{del_empty_lines} = 'yes'
         unless $self->{opt}->{del_empty_lines} =~ /^(yes|no|all)$/i;
 
-    die "indent_operands => {N|tabN}, got '"
-        . $self->{opt}->{indent_operands} . "'!\n"
+    die "indent_operands => {N|tabN}, got '" . $self->{opt}->{indent_operands} . "'!\n"
         if defined $self->{opt}->{indent_operands}
         && $self->{opt}->{indent_operands} !~ /^(\d+)|tab(\d+)$/;
     $self->{opt}->{indent_operands} = 1
@@ -197,7 +197,8 @@ sub set_opt {
 }
 
 # ------------------------------------------------------------------------------
-sub tidy_file {
+sub tidy_file
+{
     my ( $self, $file ) = @_;
 
     open my $f, '<:encoding(utf8)', $file || die "Can not read '$file': $!\n";
@@ -209,54 +210,55 @@ sub tidy_file {
 }
 
 # ------------------------------------------------------------------------------
-sub tidy_content {
+sub tidy_content
+{
     my ( $self, $content ) = @_;
 
     $self->{lastcr} = 0;
     $self->{lines}  = ();
-    $self->_format_line($_)
-        for (
-        ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
+    $self->_format_line($_) for ( ref $content eq 'ARRAY' ? @{$content} : split( /\n/, $content ) );
     return $self->_out();
 }
 
 # ------------------------------------------------------------------------------
-sub author {
+sub author
+{
     my ($self) = @_;
     return $self->{author};
 }
 
 # ------------------------------------------------------------------------------
-sub ver {
+sub ver
+{
     my ($self) = @_;
     return $self->{ver};
 }
 
 # ------------------------------------------------------------------------------
-sub name {
+sub name
+{
     my ($self) = @_;
     return $self->{name};
 }
 
 # ------------------------------------------------------------------------------
-sub id {
+sub id
+{
     my ($self) = @_;
-    return
-          $self->{name} . ' ver '
-        . $self->{ver}
-        . ', (C) '
-        . $self->{author};
+    return $self->{name} . ' ver ' . $self->{ver} . ', (C) ' . $self->{author};
 }
 
 # ------------------------------------------------------------------------------
-sub _out {
+sub _out
+{
     my ($self) = @_;
     $self->_format_comments();
     return join( "\n", map { $_->[0] } @{ $self->{lines} } ) . "\n";
 }
 
 # ------------------------------------------------------------------------------
-sub _format_line {
+sub _format_line
+{
     my ( $self, $line ) = @_;
 
     chomp $line;
@@ -266,7 +268,7 @@ sub _format_line {
     if ( $line =~ /^\s*$/ ) {
         return if $self->{opt}->{del_empty_lines} eq 'all';
         $self->{lastcr} = 0 unless $self->{opt}->{del_empty_lines} eq 'yes';
-        push @{ $self->{lines} }, [q{}]  if $self->{lastcr} < 1;
+        push @{ $self->{lines} }, [q{}] if $self->{lastcr} < 1;
         $self->{lastcr}++;
         return;
     }
@@ -311,8 +313,7 @@ sub _format_line {
     $first =~ s/^\s+|\s+$//g;
     $last =~ s/^\s+|\s+$//g;
 
-    if ( $self->{instr}->{ lc $first } || $self->{user_ids}->{ lc $first } )
-    {
+    if ( $self->{instr}->{ lc $first } || $self->{user_ids}->{ lc $first } ) {
         if ( $last && $self->{opt}->{indent_operands} =~ /^tab(\d+)$/ ) {
             my $max    = $1;
             my $length = length $first;
@@ -332,19 +333,14 @@ sub _format_line {
                 my @parts = split( $self->{comma_rx}, $part2 );
                 s/^\s+|\s+$//g for @parts;
                 unshift @parts, $part1;
-                $last = join(
-                    q{,} . ( q{ } x $self->{opt}->{indent_comma} ),
-                    @parts
-                );
+                $last = join( q{,} . ( q{ } x $self->{opt}->{indent_comma} ), @parts );
             }
         }
 
         $last =~ s/\s+$//g;
         push
             @{ $self->{lines} },
-            [   ( q{ } x $self->{opt}->{indent_left} ) . $first . $last,
-                $comment
-            ];
+            [ ( q{ } x $self->{opt}->{indent_left} ) . $first . $last, $comment ];
         return;
     }
     else {
@@ -354,7 +350,8 @@ sub _format_line {
 }
 
 # ------------------------------------------------------------------------------
-sub _format_comments {
+sub _format_comments
+{
     my ($self) = @_;
 
     my $max = 0;
