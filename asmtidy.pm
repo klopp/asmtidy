@@ -12,13 +12,13 @@ $VERSION = '1.006';
     my $tidy = new asmtidy
     (
         {
-            'indent_left' => $indent_left,
-            'indent_comma' => $indent_comma,
+            'indent_left'         => $indent_left,
+            'indent_comma'        => $indent_comma,
             'indent_tail_comment' => $indent_tail_comment,
-            'indent_operands' => $indent_operands,
-            'unaligned_comments' => $unaligned_comments,
-            'del_empty_lines' => $del_empty_lines,
-            'user_names' => $user_names,
+            'indent_operands'     => $indent_operands,
+            'unaligned_comments'  => $unaligned_comments,
+            'del_empty_lines'     => $del_empty_lines,
+            'user_names'          => $user_names,
         }
     );
 =cut
